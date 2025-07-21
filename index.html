@@ -2,8 +2,10 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>GMC Swimming Eligibility Dashboard</title>
+  <title>2025 Eligibility Dashboard</title>
+  <link rel="icon" type="image/png" href="https://github.com/coachweaver/dashboard2025/blob/main/Badge%20Color.png?raw=true">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <style>
     body {
       font-family: 'Montserrat', sans-serif;
@@ -83,9 +85,11 @@
     fetch(CSV_URL)
       .then(res => res.text())
       .then(text => {
-        const lines = text.trim().split("\n").map(line => line.split(","));
+        const parsed = Papa.parse(text, { header: false });
+        const lines = parsed.data;
         headers = lines[0];
         rows = lines.slice(1);
+
 
         // Alphabetical, unique dropdown list
         const nameSelect = document.getElementById("nameSelect");
