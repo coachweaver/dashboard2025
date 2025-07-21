@@ -82,13 +82,20 @@
         
         // Fill dropdown
         const nameSelect = document.getElementById("nameSelect");
-        rows.forEach(row => {
-          const name = row[0];
-          if (name) {
-            const option = document.createElement("option");
-            option.value = name;
-            option.textContent = name;
-            nameSelect.appendChild(option);
+        const nameSet = new Set();
+rows.forEach(row => {
+  if (row[0]) nameSet.add(row[0]);
+});
+
+const sortedNames = Array.from(nameSet).sort();
+
+sortedNames.forEach(name => {
+  const option = document.createElement("option");
+  option.value = name;
+  option.textContent = name;
+  nameSelect.appendChild(option);
+});
+
           }
         });
 
