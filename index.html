@@ -63,6 +63,7 @@
 <body>
   <img src="https://github.com/coachweaver/dashboard2025/blob/main/Badge%20Color.png?raw=true" alt="GMC Badge" class="logo">
   <h2>GMC Swimming Eligibility Dashboard</h2>
+  <h3>If your name is not listed, register for tryouts at <a href="https://gmcswimming.com" target="_blank" rel="noopener noreferrer">GMCswimming.com</a></h3>
   <select id="nameSelect">
     <option value="">Choose your name to start</option>
   </select>
@@ -103,30 +104,45 @@
         });
 
         // Get formatted last updated from cell N2
-        const rawTimestamp = lines[1]?.[13] || "";
-        if (rawTimestamp) {
-          const parsedDate = new Date(rawTimestamp);
-          const now = new Date();
-          const options = { year: "numeric", month: "long", day: "numeric" };
-          const formattedDate = parsedDate.toLocaleDateString(undefined, options);
+          const rawTimestamp = lines[1]?.[13] || "";
+          if (rawTimestamp) {
+            const parsedDate = new Date(rawTimestamp);
+            const now = new Date();
+          
+            // Format full readable date with time (e.g., July 20, 2025, 9:44 PM)
+            const formattedDate = parsedDate.toLocaleString(undefined, {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true
+            });
+          
+            // Time difference
+            const diffMs = now - parsedDate;
+            const diffSecs = Math.floor(diffMs / 1000);
+            const diffMins = Math.floor(diffSecs / 60);
+            const diffHours = Math.floor(diffMins / 60);
+            const diffDays = Math.floor(diffHours / 24);
+          
+            let timeAgo = "";
+            if (diffDays > 0) {
+              timeAgo = `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+            } else if (diffHours > 0) {
+              timeAgo = `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+            } else if (diffMins > 0) {
+              timeAgo = `${diffMins} minute${diffMins > 1 ? "s" : ""} ago`;
+            } else {
+              timeAgo = "just now";
+            }
+          
+            document.getElementById("lastUpdated").textContent =
+              `Last updated: ${formattedDate} – ${timeAgo}`;
+          } else {
+            document.getElementById("lastUpdated").textContent = "Last updated: Unknown";
+          }
 
-          const diffMs = now - parsedDate;
-          const diffMins = Math.floor(diffMs / 60000);
-          const diffHours = Math.floor(diffMins / 60);
-          const diffDays = Math.floor(diffHours / 24);
-
-          let timeAgo = "";
-          if (diffDays > 0) timeAgo = `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
-          else if (diffHours > 0) timeAgo = `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
-          else if (diffMins > 0) timeAgo = `${diffMins} minute${diffMins > 1 ? "s" : ""} ago`;
-          else timeAgo = "just now";
-
-          document.getElementById("lastUpdated").textContent =
-            `Last updated: ${formattedDate} – ${timeAgo}`;
-        } else {
-          document.getElementById("lastUpdated").textContent = "Last updated: Unknown";
-        }
-      });
 
     function renderTable(row) {
       const table = document.getElementById("dataTable");
