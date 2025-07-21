@@ -22,7 +22,7 @@
       align-items: center;
     }
     @keyframes fadeIn {
-        from { opacity: 0; }
+        from { opacity: 0.1; }
         to { opacity: 1; }
     }
       
@@ -136,6 +136,7 @@
       if (!row) return;
 
       headers.forEach((header, i) => {
+        if (i === 12 || i === 13) return;
         const tr = document.createElement("tr");
         const th = document.createElement("th");
         const td = document.createElement("td");
