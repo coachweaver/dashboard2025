@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Live Dashboard</title>
+  <style>
+    body { font-family: Arial; padding: 1em; max-width: 600px; margin: auto; }
+    select { font-size: 1em; padding: 0.3em; margin-bottom: 1em; width: 100%; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ccc; padding: 0.5em; text-align: left; }
+    th { background: #f0f0f0; }
+    .updated { margin-top: 1em; font-size: 0.9em; color: #666; }
+  </style>
+</head>
+<body>
+  <h2>Live Data Dashboard</h2>
+  <select id="nameSelect">
+    <option value="">Select a name...</option>
+  </select>
+  <table id="dataTable"></table>
+  <div class="updated" id="lastUpdated">Loading...</div>
+
+  <script>
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRVrlE4tA15ZhIfqyYi4fYcKoSta6nu7sc_Cio7CAZt2jnRJrtD5eKSfxD9fjBPhsMxkDHm8Fhxjkff/pub?output=csv";
+    
+    let headers = [], rows = [];
+
+    fetch(CSV_URL)
+      .then(res => res.text())
+      .then(text => {
+        const lines = text.trim().split("\n").map(line => line.split(","));
+        headers = lines[0];
+        rows = lines.slice(1);
+        
+        // Fill dropdown
+        const nameSelect = document.getElementById("nameSelect");
+        rows.forEach(row => {
+          const name = row[0];
+          if (name) {
+            const option = document.createElement("option");
+            option.value = name;
+            option.textContent = name;
+            nameSelect.appendChild(option);
+          }
+        });
+
+        // Attach change handler
+        nameSelect.addEventListener("change", () => {
+          const selectedName = nameSelect.value;
+          const match = rows.find(r => r[0] === selectedName);
+          renderTable(match);
+        });
+
+        // Extract last updated (assumes last row and column N)
+        const lastRow = rows[rows.length - 1];
+        const lastUpdated = lastRow[13] || "Unknown";
+        document.getElementById("lastUpdated").textContent = "Last updated: " + lastUpdated;
+      });
+
+    function renderTable(row) {
+      const table = document.getElementById("dataTable");
+      table.innerHTML = "";
+      if (!row) return;
+
+      headers.forEach((header, i) => {
+        const tr = document.createElement("tr");
+        const th = document.createElement("th");
+        const td = document.createElement("td");
+        th.textContent = header;
+        td.textContent = row[i];
+        tr.appendChild(th);
+        tr.appendChild(td);
+        table.appendChild(tr);
+      });
+    }
+  </script>
+</body>
+</html>
