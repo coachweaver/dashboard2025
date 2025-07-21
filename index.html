@@ -56,6 +56,7 @@
       margin-top: 1em;
       font-size: 0.9em;
       color: #666;
+      text-align: center;
     }
   </style>
 </head>
@@ -70,7 +71,7 @@
 
   <script>
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRVrlE4tA15ZhIfqyYi4fYcKoSta6nu7sc_Cio7CAZt2jnRJrtD5eKSfxD9fjBPhsMxkDHm8Fhxjkff/pub?output=csv";
-    
+
     let headers = [], rows = [];
 
     fetch(CSV_URL)
@@ -79,37 +80,52 @@
         const lines = text.trim().split("\n").map(line => line.split(","));
         headers = lines[0];
         rows = lines.slice(1);
-        
-        // Fill dropdown
+
+        // Alphabetical, unique dropdown list
         const nameSelect = document.getElementById("nameSelect");
         const nameSet = new Set();
-rows.forEach(row => {
-  if (row[0]) nameSet.add(row[0]);
-});
-
-const sortedNames = Array.from(nameSet).sort();
-
-sortedNames.forEach(name => {
-  const option = document.createElement("option");
-  option.value = name;
-  option.textContent = name;
-  nameSelect.appendChild(option);
-});
-
-          }
+        rows.forEach(row => {
+          if (row[0]) nameSet.add(row[0]);
+        });
+        const sortedNames = Array.from(nameSet).sort();
+        sortedNames.forEach(name => {
+          const option = document.createElement("option");
+          option.value = name;
+          option.textContent = name;
+          nameSelect.appendChild(option);
         });
 
-        // Attach change handler
+        // Dropdown change handler
         nameSelect.addEventListener("change", () => {
           const selectedName = nameSelect.value;
           const match = rows.find(r => r[0] === selectedName);
           renderTable(match);
         });
 
-       // Extract last updated from cell N2 (row index 1, column index 13)
-          const lastUpdated = lines[1]?.[13] || "Unknown";
-          document.getElementById("lastUpdated").textContent = "Last updated: " + lastUpdated;
+        // Get formatted last updated from cell N2
+        const rawTimestamp = lines[1]?.[13] || "";
+        if (rawTimestamp) {
+          const parsedDate = new Date(rawTimestamp);
+          const now = new Date();
+          const options = { year: "numeric", month: "long", day: "numeric" };
+          const formattedDate = parsedDate.toLocaleDateString(undefined, options);
 
+          const diffMs = now - parsedDate;
+          const diffMins = Math.floor(diffMs / 60000);
+          const diffHours = Math.floor(diffMins / 60);
+          const diffDays = Math.floor(diffHours / 24);
+
+          let timeAgo = "";
+          if (diffDays > 0) timeAgo = `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+          else if (diffHours > 0) timeAgo = `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+          else if (diffMins > 0) timeAgo = `${diffMins} minute${diffMins > 1 ? "s" : ""} ago`;
+          else timeAgo = "just now";
+
+          document.getElementById("lastUpdated").textContent =
+            `Last updated: ${formattedDate} – ${timeAgo}`;
+        } else {
+          document.getElementById("lastUpdated").textContent = "Last updated: Unknown";
+        }
       });
 
     function renderTable(row) {
@@ -123,7 +139,6 @@ sortedNames.forEach(name => {
         const td = document.createElement("td");
 
         th.textContent = header;
-
         const cellValue = row[i]?.trim();
         if (cellValue === "TRUE") {
           td.textContent = "✅";
